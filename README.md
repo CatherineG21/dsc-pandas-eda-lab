@@ -93,14 +93,17 @@ And set `%matplotlib inline` so the graphs will display immediately below the ce
 
 
 ```python
-# Your code here
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib inline
+
 ```
 
 Now, use pandas to open the file located at `data/ames.csv` ([documentation here](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)). Specify the argument `index_col=0` in order to avoid creating an extra `Id` column. Name the resulting dataframe `df`.
 
 
 ```python
-# Your code here
+df = pd.read_csv('data/ames.csv', index_col=0)
 ```
 
 The following code checks that you loaded the data correctly:
@@ -146,14 +149,40 @@ In the cell below, produce a histogram for `SalePrice`.
 
 
 ```python
-# Your code here
+def plot_histogram(df, column, title, xlabel, ylabel):
+    # Extract the relevant data
+    data = df[column]
+    mean = data.mean()
+    # Set up plot
+    fig, ax = plt.subplots(figsize=(10,7))
+    # Plot histogram
+    ax.hist(data, bins="auto")
+    # Plot vertical line
+    ax.axvline(mean, color="black")
+    # Customize title and axes labels
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+
+plot_histogram(
+    df,
+    "SalePrice",
+    "Distribution of Sale Prices",
+    "Sale Price",
+    "Number of Houses"
+)
 ```
 
 Now, print out the mean, median, and standard deviation:
 
 
 ```python
-# Your code here
+def print_stats(df, column):    
+    print("Mean:              ", df[column].mean())
+    print("Median:            ", df[column].median())
+    print("Standard Deviation:", df[column].std())
+    
+print_stats(df, "SalePrice")
 ```
 
 In the cell below, interpret the above information.
@@ -162,7 +191,9 @@ In the cell below, interpret the above information.
 ```python
 # Replace None with appropriate text
 """
-None
+Most houses in this sample are
+clustered around the median value of $163,000, but the higher-end
+homes are pulling the mean up to over $180,000
 """
 ```
 
@@ -172,14 +203,20 @@ In the cell below, produce a histogram for `TotRmsAbvGrd`.
 
 
 ```python
-# Your code here
+plot_histogram(
+    df,
+    "TotRmsAbvGrd",
+    "Distribution of Total Rooms Above Grade",
+    "Total Rooms (Does Not Include Bathrooms)",
+    "Number of Houses"
+)
 ```
 
 Now, print out the mean, median, and standard deviation:
 
 
 ```python
-# Your code here
+print_stats(df, "TotRmsAbvGrd")
 ```
 
 In the cell below, interpret the above information.
@@ -188,7 +225,8 @@ In the cell below, interpret the above information.
 ```python
 # Replace None with appropriate text
 """
-None
+the distribution is
+less skewed than the sale price distribution
 """
 ```
 
@@ -198,14 +236,20 @@ In the cell below, produce a histogram for `OverallCond`.
 
 
 ```python
-# Your code here
+plot_histogram(
+    df,
+    "OverallCond",
+    "Distribution of Overall Condition of Houses on a 1-10 Scale",
+    "Condition of House",
+    "Number of Houses"
+)
 ```
 
 Now, print out the mean, median, and standard deviation:
 
 
 ```python
-# Your code here
+print_stats(df, "OverallCond")
 ```
 
 In the cell below, interpret the above information.
@@ -214,7 +258,7 @@ In the cell below, interpret the above information.
 ```python
 # Replace None with appropriate text
 """
-None
+Most homes have a condition of 5
 """
 ```
 
@@ -233,9 +277,9 @@ In the cell below, create three variables, each of which represents a record-wis
 
 ```python
 # Replace None with appropriate code
-below_average_condition = None
-average_condition = None
-above_average_condition = None
+below_average_condition = df[df["OverallCond"] < 5]
+average_condition = df[df["OverallCond"] == 5]
+above_average_condition = df[df["OverallCond"] > 5]
 ```
 
 The following code checks that you created the subsets correctly:
@@ -304,7 +348,9 @@ Interpret the plot above. What does it tell us about these overall condition cat
 ```python
 # Replace None with appropriate text
 """
-None
+The average condition contains houses
+across a broader spectrum of the sale price range than either the
+below-average or above-average houses.
 """
 ```
 
@@ -320,14 +366,31 @@ You can import additional libraries, although it is possible to do this just usi
 
 
 ```python
-# Your code here
+print("\npandas way")
+# Get a list of correlations with SalePrice, sorted from smallest
+# to largest
+correlation_series = df.corr(numeric_only = True)['SalePrice'].sort_values()
+# Select second to last correlation, since the highest (last)
+# correlation will be SalePrice correlating 100% with itself
+max_corr_value = correlation_series.iloc[-2]
+max_corr_column = correlation_series.index[-2]
+print("Most Positively Correlated Column:", max_corr_column)
+print("Maximum Correlation Value:", max_corr_value)
 ```
 
 Now, find the ***most negatively correlated*** column:
 
 
 ```python
-# Your code here
+print ("\npandas way")
+
+# We can just find the smallest value, not the second smallest,
+# since we aren't avoiding the perfect correlation with itself
+min_corr_value = correlation_series.iloc[0]
+min_corr_column = correlation_series.index[0]
+
+print("Most Negatively Correlated Column:", min_corr_column)
+print("Minimum Correlation Value:", min_corr_value)
 ```
 
 Once you have your answer, edit the code below so that it produces a box plot of the relevant columns.
@@ -342,23 +405,23 @@ fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(15,5))
 
 # Plot distribution of column with highest correlation
 sns.boxplot(
-    x=None,
+    x=df[max_corr_column],
     y=df["SalePrice"],
     ax=ax1
 )
 # Plot distribution of column with most negative correlation
 sns.boxplot(
-    x=None,
+    x=df[min_corr_column],
     y=df["SalePrice"],
     ax=ax2
 )
 
 # Customize labels
-ax1.set_title(None)
-ax1.set_xlabel(None)
+ax1.set_title("Overall Quality vs. Sale Price")
+ax1.set_xlabel("Overall Quality")
 ax1.set_ylabel("Sale Price")
-ax2.set_title(None)
-ax2.set_xlabel(None)
+ax2.set_title(Number of Kitchens vs. Sale Price)
+ax2.set_xlabel("Number of Kitchens Above Ground")
 ax2.set_ylabel("Sale Price");
 ```
 
@@ -368,7 +431,10 @@ Interpret the results below. Consult `data/data_description.txt` as needed.
 ```python
 # Replace None with appropriate text
 """
-None
+The column with the highest correlation is overall quality.
+The column with the most negative correlation is the number of 
+kitchens above ground.
+All houses have 1 or 2 kitchens above grade, although there are some with 0 or 3.
 """
 ```
 
@@ -409,7 +475,10 @@ Interpret this plot below:
 ```python
 # Replace None with appropriate text
 """
-None
+Newer houses appear to be more valuable, with value increasing
+as homes age. Interestingly the variance seems to increase once the home
+age goes over 100 years, with several above-average sale prices and fewer
+home sales in general.
 """
 ```
 
